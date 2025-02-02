@@ -1,0 +1,178 @@
+SELECT * FROM demo.esd;
+
+#where clause
+select * from demo.esd where city ="Seattle";
+select JobTitle,FullName,AnnualSalary from demo.esd where JobTitle = "Sr. Manger";
+
+#And, or & not operators
+select JobTitle,FullName,AnnualSalary,City from demo.esd where JobTitle = "Sr. Manger" and City ="Seattle";
+select Gender,FullName,AnnualSalary,Country from demo.esd where Gender = "Female" or Country ="China";
+select * from demo.esd where not Gender="Female";
+
+#Like Operator-- 
+select * from demo.esd where FullName like "mar%";
+select * from demo.esd where FullName like "%mar";
+select * from demo.esd where FullName like "%mar%";
+
+#ORDER BY keyword
+select * from demo.esd order by Age asc;
+select * from demo.esd order by Age desc;
+
+select * from demo.esd order by Department asc,Age ;
+select * from sakila.payment;
+select * from sakila.payment order by amount desc;
+
+#Limit Clause
+select * from demo.esd limit 10;
+select * from demo.esd order by Department asc,Age limit 5;
+
+#BETWEEN Operator
+select * from demo.esd where Age between 40 and 42 ;
+select * from demo.esd where AnnualSalary between "$1,00,000" and "$15,00,000" ;
+
+# In & Not IN operator
+select * from demo.esd where Department in("IT","Accounting");
+select * from demo.esd where City in("Seattle","Miami");
+select * from demo.esd where City not in("Seattle","Miami");
+select * from demo.esd where City in("Seattle","Miami") and Department in("IT","Accounting");
+
+#String Functions
+Select concat(Jobtitle, " - ",Department)as Designation from demo.esd;
+select concat_ws(" - ",JobTitle,Department,Gender)as Emp_details from demo.esd;
+select length(AnnualSalary)as digitCount from demo.esd;
+select upper(FullName) as Names from demo.esd;
+select lower(FullName) as Names from demo.esd;
+select left(FullName,4)as user_name from demo.esd;
+select right(FullName,4)as user_name from demo.esd;
+select mid(FullName,2,5)as mid_name from demo.esd;
+
+# Data Aggregation Numeric Functions
+select sum(Age)as total_amount from demo.esd;
+Select * from classicmodels.customers;
+select * from classicmodels.orderdetails;
+select count(customerNumber)as TotalCustomers from classicmodels.customers;
+select avg(quantityOrdered) as avg_quantity from classicmodels.orderdetails;
+select * from classicmodels.payments;
+select sum(amount) as total_amount from classicmodels.payments;
+select max(amount) as max_value from classicmodels.payments;
+select min(amount) as min_value from classicmodels.payments;
+select truncate(amount,0) as amount from classicmodels.payments;
+select ceil(amount) as higher_amount from classicmodels.payments;
+select floor(amount) as lower_amount from classicmodels.payments;
+
+#Date Functions
+select * from sakila.payment;
+select date(payment_date) as dates from sakila.payment;
+select time(payment_date) as Times from sakila.payment;
+select dayname(payment_date) as dates from sakila.payment;
+select monthname(payment_date) as months from sakila.payment;
+select year(payment_date) as year_ from sakila.payment;
+select hour(payment_date) as hours from sakila.payment;
+select minute(payment_date) as minutes from sakila.payment;
+
+select * from classicmodels.orders;
+select datediff(shippedDate,orderDate)as days from classicmodels.orders;
+
+# Case Operator
+select * from classicmodels.products;
+select productName, quantityInStock,
+case
+	when quantityInStock <1000 then "Urgent need of more stock"
+    else "no requirement as of now"
+end as production_details from classicmodels.products;
+
+select * from classicmodels.orderdetails;
+select orderNumber,quantityOrdered,
+case
+	when quantityOrdered <=30 then "low order"
+    when quantityOrdered >=40 then "high order"
+    else "avg order"
+end as order_type from classicmodels.orderdetails;
+
+#Group By
+select * from demo.esd;
+select Department,count(ï»¿EEID)FROM demo.esd group by Department;
+select Gender,count(ï»¿EEID)FROM demo.esd group by Gender;
+
+select * from classicmodels.products;
+select productLine,count(productCode) from classicmodels.products group by productLine order by count(productCode)asc;
+
+# Having Clause
+select * from demo.esd;
+select Department,count(ï»¿EEID) from demo.esd group by Department having count(ï»¿EEID)>100;
+
+select productLine,sum(quantityInStock) from products group by productLine having sum(quantityInStock)<50000;
+
+# Joins in(inner,left,right,cross)
+# inner join
+select * from classicmodels.products;
+select * from classicmodels.orderdetails;
+select products.productName,sum(orderdetails.quantityOrdered) from products inner join orderdetails on products.productCode = orderdetails.productCode group by products.productName;
+
+# left join
+select products.productName, orderdetails.quantityOrdered from products left join orderdetails on products.productCode = orderdetails.productCode;
+
+# right join
+select products.productName, orderdetails.quantityOrdered from products right join orderdetails on products.productCode = orderdetails.productCode;
+
+# cross join
+select * from products cross join orderdetails on products.productCode=orderdetails.productCode;
+
+# set opertions
+
+# subqueries
+
+select * from classicmodels.customers;
+select avg(creditLimit) from classicmodels.customers;
+select * from classicmodels.customers where creditLimit > 66500;
+
+select * from classicmodels.customers where creditLimit > (select avg(creditLimit) from classicmodels.customers);
+
+#views
+create view count_of_customers as
+select country,count(customerNumber) from classicmodels.customers
+group by country;
+
+create view france_data as
+select * from customers where country = "France";
+
+#create procedure
+Delimiter &&
+create procedure get_data()
+begin
+	select*from classicmodels.customers;
+end &&
+Delimiter ;
+
+Delimiter &&
+create procedure get_limit(in var int)
+begin
+	select*from classicmodels.customers limit var;
+end &&
+Delimiter ;
+
+call classicmodels.get_data();
+call classicmodels.get_limit(3);
+
+
+Delimiter &&
+create procedure get_credit(out var int)
+begin
+	select max(creditlimit)into var from classicmodels.customers;
+end &&
+Delimiter ;
+call classicmodels.get_credit(@abc);
+select @abc;
+
+Delimiter &&
+create procedure get_name(inout var int)
+begin
+	select customerName from classicmodels.customers where customerNumber = var;
+end &&
+Delimiter ;
+set @bc = 151;
+call classicmodels.get_name(@bc);
+select @bc;
+
+
+
